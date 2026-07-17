@@ -1,0 +1,186 @@
+<div class="dashboard-wrapper">
+  <!-- Top Tech Navbar -->
+  <header class="cyber-header">
+    <div class="logo">
+      <span class="icon-terminal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </span>
+      <h1>SOC_COORDINATOR_CONSOLE <span class="version-badge">v1.2.0</span></h1>
+    </div>
+    <div class="user-profile">
+      <span class="role-indicator badge-glow">ADMIN</span>
+      <span class="username">{{ operatorName }}</span>
+      <button (click)="logout()" class="btn-logout">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-content">
+    
+    <!-- Stats Row -->
+    <section class="stats-row">
+      <div class="cyber-card stat-card card-teal">
+        <div class="stat-value">{{ totalCount }}</div>
+        <div class="stat-label">TOTAL THREAT LOGS</div>
+      </div>
+      <div class="cyber-card stat-card card-violet alert-pulse">
+        <div class="stat-value">{{ unassignedCount }}</div>
+        <div class="stat-label">UNASSIGNED INCIDENTS</div>
+      </div>
+      <div class="cyber-card stat-card card-teal">
+        <div class="stat-value">{{ assignedCount }}</div>
+        <div class="stat-label">ACTIVE INVESTIGATIONS</div>
+      </div>
+      <div class="cyber-card stat-card card-jade">
+        <div class="stat-value">{{ mitigatedCount }}</div>
+        <div class="stat-label">MITIGATED THREATS</div>
+      </div>
+    </section>
+
+    <!-- Success & Error Banners -->
+    <div *ngIf="success" class="cyber-alert cyber-alert-success alert-pulse">
+      <strong>[SYSTEM_INFO]:</strong> {{ success }}
+    </div>
+    <div *ngIf="error" class="cyber-alert cyber-alert-danger">
+      <strong>[CRITICAL_FAIL]:</strong> {{ error }}
+    </div>
+
+    <!-- Alert List and Details Split Panel -->
+    <div class="split-layout">
+      
+      <!-- Left Panel: Active Logs -->
+      <div class="left-panel cyber-card">
+        <div class="panel-header">
+          <h2>CYBERSECURITY THREAT STREAM</h2>
+          <button (click)="onGenerateAlert()" class="btn-cyber alert-pulse" [disabled]="loading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            GENERATE ALERT TRIGGER
+          </button>
+        </div>
+
+        <div *ngIf="alerts.length === 0" class="no-logs">
+          <p>NO THREAT LOGS CAPTURED IN DATABASE.</p>
+          <p class="subtext">Click the trigger button to simulate firewall and server intrusion signals.</p>
+        </div>
+
+        <div *ngIf="alerts.length > 0" class="logs-table-wrapper">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>THREAT TARGET</th>
+                <th>SEVERITY</th>
+                <th>STATUS</th>
+                <th>ASSIGNED TO</th>
+                <th>TIMESTAMP</th>
+                <th>ASSIGNMENT ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let alert of alerts" [class.selected]="selectedAlert?.id === alert.id" (click)="selectAlert(alert)">
+                <td>#{{ alert.id }}</td>
+                <td>
+                  <div class="threat-title">{{ alert.title }}</div>
+                  <div class="threat-category">{{ alert.category }}</div>
+                </td>
+                <td>
+                  <span class="badge-glow" [ngClass]="{
+                    'badge-critical': alert.severity === 'CRITICAL',
+                    'badge-high': alert.severity === 'HIGH',
+                    'badge-medium': alert.severity === 'MEDIUM',
+                    'badge-low': alert.severity === 'LOW'
+                  }">{{ alert.severity }}</span>
+                </td>
+                <td>
+                  <span class="badge-glow badge-status" [ngClass]="{
+                    'badge-status-unassigned': alert.status === 'UNASSIGNED',
+                    'badge-status-assigned': alert.status === 'ASSIGNED',
+                    'badge-status-accepted': alert.status === 'ACCEPTED',
+                    'badge-status-investigating': alert.status === 'INVESTIGATING',
+                    'badge-status-mitigated': alert.status === 'MITIGATED'
+                  }">{{ alert.status }}</span>
+                </td>
+                <td>
+                  <span class="analyst-name">{{ alert.assignedAnalyst ? alert.assignedAnalyst.name : 'UNASSIGNED' }}</span>
+                </td>
+                <td>{{ alert.timestamp | date:'short' }}</td>
+                <td (click)="$event.stopPropagation()">
+                  <div *ngIf="alert.status === 'UNASSIGNED'; else tracking" class="assign-action-box">
+                    <select [(ngModel)]="selectedAnalystForAlert[alert.id]" class="cyber-select-sm">
+                      <option [value]="undefined" disabled selected>SELECT ANALYST</option>
+                      <option *ngFor="let analyst of analysts" [value]="analyst.id">{{ analyst.name }}</option>
+                    </select>
+                    <button (click)="onAssign(alert.id)" class="btn-cyber-sm">ASSIGN</button>
+                  </div>
+                  <ng-template #tracking>
+                    <div class="tracking-text">TRACKING IN PROGRESS</div>
+                  </ng-template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Panel: Expanded Triage Details -->
+      <div class="right-panel cyber-card" [class.visible]="selectedAlert !== null">
+        <div *ngIf="!selectedAlert" class="no-selection-message">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <p>SELECT A LOG RECORD FROM THE THREAT STREAM TO INSPECT TRIAGE INTELLIGENCE</p>
+        </div>
+
+        <div *ngIf="selectedAlert" class="details-content">
+          <div class="panel-header border-bottom">
+            <div>
+              <span class="badge-glow" [ngClass]="{
+                'badge-critical': selectedAlert.severity === 'CRITICAL',
+                'badge-high': selectedAlert.severity === 'HIGH',
+                'badge-medium': selectedAlert.severity === 'MEDIUM',
+                'badge-low': selectedAlert.severity === 'LOW'
+              }">{{ selectedAlert.severity }}</span>
+              <h2>INCIDENT #{{ selectedAlert.id }}</h2>
+            </div>
+            <button (click)="closeDetailPanel()" class="btn-close">&times;</button>
+          </div>
+
+          <div class="details-section">
+            <h3>THREAT TARGET INFORMATION</h3>
+            <p class="threat-title-large">{{ selectedAlert.title }}</p>
+            <div class="meta-row">
+              <div><strong>Category:</strong> {{ selectedAlert.category }}</div>
+              <div><strong>Status:</strong> {{ selectedAlert.status }}</div>
+              <div><strong>Timestamp:</strong> {{ selectedAlert.timestamp | date:'medium' }}</div>
+            </div>
+            <div class="description-box">
+              {{ selectedAlert.description }}
+            </div>
+          </div>
+
+          <div class="details-section">
+            <h3>AI AUTO-TRIAGE ANALYSIS (RAG EXTRACTED)</h3>
+            <pre class="terminal-block">{{ selectedAlert.aiAnalysisReport }}</pre>
+          </div>
+
+          <div class="details-section">
+            <h3>GENERATED MITIGATION PLAYBOOK SCRIPT</h3>
+            <pre class="terminal-block terminal-script">{{ selectedAlert.mitigationScript }}</pre>
+          </div>
+
+          <div class="details-section border-top pt-3" *ngIf="selectedAlert.status === 'MITIGATED'">
+            <h3>ANALYST RESOLUTION MITIGATION REPORT</h3>
+            <div class="analyst-report-box">
+              <div class="report-meta">
+                <strong>RESOLVED BY:</strong> {{ selectedAlert.assignedAnalyst?.name }} ({{ selectedAlert.assignedAnalyst?.email }})
+              </div>
+              <div class="report-body">
+                {{ selectedAlert.mitigationResult }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

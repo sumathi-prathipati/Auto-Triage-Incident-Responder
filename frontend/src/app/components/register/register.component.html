@@ -1,0 +1,86 @@
+<div class="register-container">
+  <div class="cyber-card card-violet register-card">
+    <div class="console-header">
+      <div class="terminal-dots">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <div class="console-title">IDENTITY_PROVISIONING_v1.0.4</div>
+    </div>
+
+    <div class="logo-area">
+      <div class="icon-pulse">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9b51e0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+      </div>
+      <h2>PROVISION OPERATOR</h2>
+      <p class="subtitle">Enroll security credentials</p>
+    </div>
+
+    <div *ngIf="error" class="cyber-alert cyber-alert-danger">
+      <strong>[PROVISIONING_ERROR]:</strong> {{ error }}
+    </div>
+
+    <div *ngIf="successMsg" class="cyber-alert cyber-alert-success">
+      <strong>[SUCCESS]:</strong> {{ successMsg }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="form-group">
+        <label for="name">FULL NAME</label>
+        <input 
+          type="text" 
+          id="name" 
+          name="name" 
+          class="cyber-input" 
+          [(ngModel)]="name" 
+          placeholder="John Doe" 
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">OPERATOR EMAIL</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          class="cyber-input" 
+          [(ngModel)]="email" 
+          placeholder="operator@company.com" 
+          required 
+          autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="password">ACCESS KEY / PASSWORD</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          class="cyber-input" 
+          [(ngModel)]="password" 
+          placeholder="•••••••• (Min 6 chars)" 
+          required 
+          autocomplete="new-password">
+      </div>
+
+      <div class="form-group">
+        <label for="role">SECURITY CLEARANCE LEVEL</label>
+        <select id="role" name="role" class="cyber-select" [(ngModel)]="role" required>
+          <option value="ROLE_ANALYST">SOC ANALYST (Tier 1/2 Responder)</option>
+          <option value="ROLE_ADMIN">SECURITY ADMIN (Coordinator)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-cyber btn-cyber-violet w-100" [disabled]="loading || successMsg.length > 0">
+        <span *ngIf="!loading">PROVISION PROFILE</span>
+        <span *ngIf="loading">CREATING PROFILE...</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <span>Already provisioned? </span>
+      <a routerLink="/login" class="neon-link">INITIALIZE SESSION</a>
+    </div>
+  </div>
+</div>

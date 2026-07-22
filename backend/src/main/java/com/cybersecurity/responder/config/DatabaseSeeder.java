@@ -2,11 +2,14 @@ package com.cybersecurity.responder.config;
 
 import com.cybersecurity.responder.entity.PredefinedAlert;
 import com.cybersecurity.responder.entity.Role;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.cybersecurity.responder.entity.Severity;
 import com.cybersecurity.responder.entity.User;
 import com.cybersecurity.responder.repository.PredefinedAlertRepository;
 import com.cybersecurity.responder.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -17,6 +20,8 @@ import java.util.List;
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseSeeder.class);
+
     @Autowired
     private UserRepository userRepository;
 
@@ -25,6 +30,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${app.seeder.admin-pass}")
+    private String adminPassword;
+
+    @Value("${app.seeder.analyst-pass}")
+    private String analystPassword;
 
     @Override
     public void run(String... args) throws Exception {
@@ -37,22 +48,22 @@ public class DatabaseSeeder implements CommandLineRunner {
             // Seed a default admin
             User admin = new User(
                     "admin@responder.com",
-                    passwordEncoder.encode("admin123"),
+                    passwordEncoder.encode(adminPassword),
                     "Security Admin",
                     Role.ROLE_ADMIN
             );
             userRepository.save(admin);
-            System.out.println("[DB SEEDER] Created default admin account: admin@responder.com / admin123");
+            logger.info("[DB SEEDER] Created default admin account");
 
             // Seed a default analyst
             User analyst = new User(
                     "analyst@responder.com",
-                    passwordEncoder.encode("analyst123"),
+                    passwordEncoder.encode(analystPassword),
                     "SOC Analyst Alpha",
                     Role.ROLE_ANALYST
             );
             userRepository.save(analyst);
-            System.out.println("[DB SEEDER] Created default analyst account: analyst@responder.com / analyst123");
+            logger.info("[DB SEEDER] Created default analyst account");
         }
     }
 
@@ -91,7 +102,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     )
             );
             predefinedAlertRepository.saveAll(templates);
-            System.out.println("[DB SEEDER] Seeded 5 predefined cybersecurity alert templates.");
+            logger.info("[DB SEEDER] Seeded 5 predefined cybersecurity alert templates.");
         }
     }
 }

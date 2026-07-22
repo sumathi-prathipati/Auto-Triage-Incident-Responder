@@ -10,10 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 public class AlertService {
@@ -31,12 +29,13 @@ public class AlertService {
     private AutoTriageService autoTriageService;
 
     private final Random random = new Random();
+    private static final String ALERT_NOT_FOUND = "Alert not found";
 
     @Transactional
     public AlertDto generateRandomAlert() {
         List<PredefinedAlert> predefined = predefinedAlertRepository.findAll();
         if (predefined.isEmpty()) {
-            throw new RuntimeException("No predefined alert templates found in the database. Please seed the database first.");
+            throw new IllegalStateException("No predefined alert templates found in the database. Please seed the database first.");
         }
 
         // Pick random template
@@ -67,7 +66,7 @@ public class AlertService {
         alerts.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
         return alerts.stream()
                 .map(AlertDto::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -76,7 +75,7 @@ public class AlertService {
         alerts.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
         return alerts.stream()
                 .map(AlertDto::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -108,7 +107,7 @@ public class AlertService {
     @Transactional
     public AlertDto acceptAlert(Long alertId, String analystEmail) {
         Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> new IllegalArgumentException("Alert not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ALERT_NOT_FOUND));
         
         verifyAssignedAnalyst(alert, analystEmail);
 
@@ -119,7 +118,7 @@ public class AlertService {
     @Transactional
     public AlertDto updateAlertStatus(Long alertId, AlertStatus status, String analystEmail) {
         Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> new IllegalArgumentException("Alert not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ALERT_NOT_FOUND));
         
         verifyAssignedAnalyst(alert, analystEmail);
 
@@ -134,7 +133,7 @@ public class AlertService {
     @Transactional
     public AlertDto resolveAlert(Long alertId, String mitigationResult, String analystEmail) {
         Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> new IllegalArgumentException("Alert not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ALERT_NOT_FOUND));
         
         verifyAssignedAnalyst(alert, analystEmail);
 
@@ -150,7 +149,7 @@ public class AlertService {
     @Transactional
     public AlertDto rejectAlert(Long alertId, String analystEmail) {
         Alert alert = alertRepository.findById(alertId)
-                .orElseThrow(() -> new IllegalArgumentException("Alert not found"));
+                .orElseThrow(() -> new IllegalArgumentException(ALERT_NOT_FOUND));
         
         verifyAssignedAnalyst(alert, analystEmail);
 

@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -48,7 +47,7 @@ public class AdminController {
         List<User> analysts = userRepository.findByRole(Role.ROLE_ANALYST);
         List<UserDto> dtos = analysts.stream()
                 .map(UserDto::new)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(dtos);
     }
 }

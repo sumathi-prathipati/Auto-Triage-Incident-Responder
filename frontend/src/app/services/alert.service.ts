@@ -8,8 +8,8 @@ import { User } from '../models/user.model';
   providedIn: 'root'
 })
 export class AlertService {
-  private adminUrl = 'http://localhost:8080/api/admin';
-  private analystUrl = 'http://localhost:8080/api/analyst';
+  private adminUrl = 'https://auto-triage-incident-responder-1.onrender.com/api/admin';
+  private analystUrl = 'https://auto-triage-incident-responder-1.onrender.com/api/analyst';
 
   constructor(private http: HttpClient) {}
 

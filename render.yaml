@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: auto-triage-incident-responder
+    runtime: java
+    rootDir: backend
+    buildCommand: mvn clean package
+    startCommand: java -jar target/*.jar

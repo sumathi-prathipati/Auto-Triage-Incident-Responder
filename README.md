@@ -12,6 +12,7 @@ Open a terminal inside the
 frontend folder
  and run:
 bash
+npm start/
 npx ng serve --port 4200
 
 ////////////////////////
